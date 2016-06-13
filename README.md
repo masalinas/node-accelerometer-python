@@ -2,7 +2,7 @@
 
 A proof of concept to demostrate any measure captured from a accelerometer attached to a raspberry pi 3 and transport this information throw mqtt protocol to a central server thats centralize this information using a message broker like mosca and node-red to parse and visualize it .
 
-![node-red-flow](![picapp - apple imac](https://cloud.githubusercontent.com/assets/1216181/16017496/80f963a4-31a0-11e6-8f53-ec98471e6322.png))
+![picapp - apple imac](https://cloud.githubusercontent.com/assets/1216181/16017496/80f963a4-31a0-11e6-8f53-ec98471e6322.png)
 
 The Node-RED flow Designer
 
