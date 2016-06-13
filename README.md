@@ -40,6 +40,13 @@ applied.
 
 # Installation:
 
+Install python 3 mqtt modeule and microstack shield modules on raspberry-pi 3:
+```
+  sudo apt-get install python3-microstacknode
+  sudo apt-get install python3-pip
+  sudo pip3 install paho-mqtt
+```
+
 Install mosca mqtt message broker:
 ```
   npm install mosca bunyan -g
