@@ -12,7 +12,7 @@ The Node-RED UI
 
 The Raspberry pi 3 and accelerometer connected
 
-![picapp - apple imac 1](https://cloud.githubusercontent.com/assets/1216181/16017586/e3c7be7c-31a0-11e6-9f63-03850d17dd92.png)
+![accelerometer_raspberrypi](https://cloud.githubusercontent.com/assets/1216181/16017883/41bb0646-31a2-11e6-907b-8fb9019c17c8.jpeg)
 
 # Infraestructure Techonologies:
 
