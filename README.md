@@ -16,7 +16,7 @@ The Raspberry pi 3 and accelerometer connected
 
 Architecture
 
-![accelerometer_arch](https://cloud.githubusercontent.com/assets/1216181/16018092/2a5df214-31a3-11e6-8e9d-90b595cba9ca.jpg)
+![accelerometer_arch](https://cloud.githubusercontent.com/assets/1216181/16018154/7defe644-31a3-11e6-93c2-b8d0c215537d.jpg)
 
 
 # Hardware:
