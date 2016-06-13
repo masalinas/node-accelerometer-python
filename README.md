@@ -14,8 +14,19 @@ The Raspberry pi 3 and accelerometer connected
 
 ![accelerometer_raspberrypi](https://cloud.githubusercontent.com/assets/1216181/16017883/41bb0646-31a2-11e6-907b-8fb9019c17c8.jpeg)
 
+Architecture
+
+
+# Hardware:
+
+- [Raspberry pi 3](https://www.raspberrypi.org/): The Raspberry Pi is a series of credit card-sized single-board computers developed in the United Kingdom by the Raspberry Pi Foundation.
+- [Microstack™ Baseboard For Raspberry Pi®](http://www.microstack.org.uk/assets/pibaseboard/FormattedPiBaseboardgettingstarted.pdf): Microstack™ Baseboard brings the exciting range of Microstack™ modules to Raspberry Pi®.
+- [Microstack™ Accelerometer](http://www.generationrobots.com/media/Microstack/Microstack-accelerometer-for-raspberry-pi-getting-started.pdf): Find out which way is up! Detect taps, flicks, swishes and shakes, make a 3D motion controller or discover how much force has been
+applied. 
+
 # Infraestructure Techonologies:
 
+- [Raspbian](https://www.raspberrypi.org/downloads/raspbian/): Last raspbian for raspberry pi. Raspbian is the Foundation’s official supported operating system.
 - [NodeJS](https://nodejs.org/): Event-driven I/O server-side JavaScript environment based on V8. Includes API documentation, change-log, examples and announcements.
 - [mosca](https://github.com/mcollina/mosca): MQTT broker as a module http://mosca.io.
 - [Node-Red](http://nodered.org/): A visual tool for wiring the Internet of Things.
