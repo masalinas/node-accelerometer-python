@@ -4,11 +4,11 @@ A proof of concept to demostrate any measure captured from a accelerometer attac
 
 The Node-RED flow Designer
 
-![picapp - apple imac](https://cloud.githubusercontent.com/assets/1216181/16017496/80f963a4-31a0-11e6-8f53-ec98471e6322.png)
+ ![screen_accel_flow](https://cloud.githubusercontent.com/assets/1216181/16090161/9bafae1c-332e-11e6-82fe-326f93d07956.png)
 
-The Node-RED UI
+The Node-RED UI with node-red-contrib-graph node-red module
 
-![picapp - apple imac 1](https://cloud.githubusercontent.com/assets/1216181/16017586/e3c7be7c-31a0-11e6-9f63-03850d17dd92.png)
+![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png))
 
 The Raspberry pi 3 and accelerometer connected
 
@@ -40,6 +40,13 @@ applied.
 
 # Installation:
 
+Install python 3 mqtt modeule and microstack shield modules on raspberry-pi 3:
+```
+  sudo apt-get install python3-microstacknode
+  sudo apt-get install python3-pip
+  sudo pip3 install paho-mqtt
+```
+
 Install mosca mqtt message broker:
 ```
   npm install mosca bunyan -g
@@ -63,7 +70,7 @@ Access Node-Red Web designer
 
 Copy and import this flow from node-red import clipboard
 ```
-[{"id":"2a3e1609.eb51fa","type":"ui_tab","z":"66a7a68a.89d808","name":"Home","icon":"dashboard","order":"1"},{"id":"3111afea.fdc34","type":"mqtt-broker","z":"66a7a68a.89d808","broker":"127.0.0.1","port":"1883","clientid":"","usetls":false,"verifyservercert":true,"compatmode":true,"keepalive":"60","cleansession":true,"willTopic":"","willQos":"0","willRetain":null,"willPayload":"","birthTopic":"","birthQos":"0","birthRetain":null,"birthPayload":""},{"id":"9186d7c4.d09e18","type":"mqtt in","z":"66a7a68a.89d808","name":"Accelerometer Mqtt","topic":"sensor/accelerometer","broker":"3111afea.fdc34","x":128.5,"y":214,"wires":[["74e693c.b495e6c","6ffb6e8.392319","e99370e5.0b85f"]]},{"id":"bfe1206a.e51c8","type":"ui_chart","z":"66a7a68a.89d808","tab":"2a3e1609.eb51fa","name":"Accelerometer","group":"1","order":1,"interpolate":"linear","nodata":"No Data","removeOlder":"10","removeOlderUnit":"1","x":478.5,"y":272,"wires":[[],[]]},{"id":"74e693c.b495e6c","type":"function","z":"66a7a68a.89d808","name":"Z Axis","func":"var measure = JSON.parse(msg.payload);\n\nmsg.payload = measure.data.z;\n\nreturn msg;","outputs":1,"noerr":0,"x":316.5,"y":297,"wires":[["bfe1206a.e51c8","b5f5e26e.76afc"]]},{"id":"b5f5e26e.76afc","type":"debug","z":"66a7a68a.89d808","name":"","active":true,"console":"false","complete":"false","x":473.5,"y":325,"wires":[]},{"id":"e99370e5.0b85f","type":"function","z":"66a7a68a.89d808","name":"X Axis","func":"var measure = JSON.parse(msg.payload);\n\nmsg.topic = measure.data.x;\n\nreturn msg;","outputs":1,"noerr":0,"x":323,"y":135,"wires":[[]]},{"id":"6ffb6e8.392319","type":"function","z":"66a7a68a.89d808","name":"Y Axis","func":"var measure = JSON.parse(msg.payload);\n\nmsg.topic = measure.data.y;\n\nreturn msg;","outputs":"1","noerr":0,"x":317,"y":214,"wires":[[]]}]
+[{"id":"3111afea.fdc34","type":"mqtt-broker","z":"66a7a68a.89d808","broker":"127.0.0.1","port":"1883","clientid":"","usetls":false,"verifyservercert":true,"compatmode":true,"keepalive":"60","cleansession":true,"willTopic":"","willQos":"0","willRetain":null,"willPayload":"","birthTopic":"","birthQos":"0","birthRetain":null,"birthPayload":""},{"id":"9186d7c4.d09e18","type":"mqtt in","z":"66a7a68a.89d808","name":"Accelerometer Mqtt","topic":"sensor/accelerometer","broker":"3111afea.fdc34","x":128.5,"y":214,"wires":[["ff33dc25.99f42","45db47ad.89b3f8","d6479b56.8174a8","b5f5e26e.76afc"]]},{"id":"b5f5e26e.76afc","type":"debug","z":"66a7a68a.89d808","name":"","active":true,"console":"false","complete":"payload","x":384.5,"y":73,"wires":[]},{"id":"ff33dc25.99f42","type":"function","z":"66a7a68a.89d808","name":"Acceleration","func":"var measure = JSON.parse(msg.payload);\n\nmsg.payload = {'A': measure.A,\n               'tstamp': measure.tstamp};\n\nreturn msg;","outputs":1,"noerr":0,"x":377,"y":171,"wires":[["a05b625c.5decb"]]},{"id":"a05b625c.5decb","type":"iot-datasource","z":"66a7a68a.89d808","name":"Acceleration","tstampField":"tstamp","dataField":"A","disableDiscover":false,"x":573,"y":171,"wires":[[]]},{"id":"45db47ad.89b3f8","type":"function","z":"66a7a68a.89d808","name":"Velocity","func":"var measure = JSON.parse(msg.payload);\n\nmsg.payload = {'V': measure.V,\n               'tstamp': measure.tstamp};\n\nreturn msg;","outputs":1,"noerr":0,"x":369,"y":253,"wires":[["e0a9f0d5.f4a37"]]},{"id":"d6479b56.8174a8","type":"function","z":"66a7a68a.89d808","name":"Position","func":"var measure = JSON.parse(msg.payload);\n\nmsg.payload = {'D': measure.D,\n               'tstamp': measure.tstamp};\n\nreturn msg;","outputs":1,"noerr":0,"x":369,"y":337,"wires":[["81319b06.9cc8e8"]]},{"id":"e0a9f0d5.f4a37","type":"iot-datasource","z":"66a7a68a.89d808","name":"Velocity","tstampField":"tstamp","dataField":"V","disableDiscover":false,"x":562,"y":253,"wires":[[]]},{"id":"81319b06.9cc8e8","type":"iot-datasource","z":"66a7a68a.89d808","name":"Position","tstampField":"tstamp","dataField":"D","disableDiscover":false,"x":563,"y":337,"wires":[[]]}]
 ```
 
 Access Node-Red UI Web
