@@ -4,7 +4,7 @@ A proof of concept to demostrate any measure captured from a accelerometer attac
 
 The Node-RED flow Designer
 
-![picapp - apple imac](https://cloud.githubusercontent.com/assets/1216181/16017496/80f963a4-31a0-11e6-8f53-ec98471e6322.png)
+ ![screen_accel_flow](https://cloud.githubusercontent.com/assets/1216181/16090161/9bafae1c-332e-11e6-82fe-326f93d07956.png)
 
 The Node-RED UI with node-red-contrib-graph node-red module
 
