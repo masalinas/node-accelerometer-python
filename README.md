@@ -1,6 +1,6 @@
 # node-accelerometer
 
-A proof of concept to demostrate any measure captured from a accelerometer attached to a raspberry pi 3 and transport this information throw mqtt protocol to a central server thats centralize this information using a message broker like mosca and node-red to parse and visualize it .
+A proof of concept to demostrate any measure captured from a accelerometer attached to a raspberry pi 3 and transport this information throw mqtt protocol to a hub server thats centralize this information using a mqtt message broker like mosca and message router like node-red to parse and manage.
 
 The Node-RED flow Designer
 
