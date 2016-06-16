@@ -6,7 +6,7 @@ The Node-RED flow Designer
 
  ![screen_accel_flow](https://cloud.githubusercontent.com/assets/1216181/16090161/9bafae1c-332e-11e6-82fe-326f93d07956.png)
 
-The Node-RED UI with node-red-contrib-graph node-red module
+The Dashboard with node-red-contrib-graph node-red module
 
 ![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png))
 
