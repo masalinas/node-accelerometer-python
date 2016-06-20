@@ -38,3 +38,6 @@ jspm_packages
 
 # docs
 docs
+
+# mac files
+.DS_Store
