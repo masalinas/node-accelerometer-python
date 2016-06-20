@@ -18,7 +18,6 @@ Architecture
 
 ![accelerometer_arch](https://cloud.githubusercontent.com/assets/1216181/16018154/7defe644-31a3-11e6-93c2-b8d0c215537d.jpg)
 
-
 # Hardware:
 
 - [Raspberry pi 3](https://www.raspberrypi.org/): The Raspberry Pi is a series of credit card-sized single-board computers developed in the United Kingdom by the Raspberry Pi Foundation.
@@ -33,6 +32,15 @@ applied.
 - [mosca](https://github.com/mcollina/mosca): MQTT broker as a module http://mosca.io.
 - [Node-Red](http://nodered.org/): A visual tool for wiring the Internet of Things.
 
+# Infraestructure Techonologies on device
+
+- [python3-microstacknode](https://github.com/microstack-IoT/python3-microstacknode): Python modules for interacting with Microstack node components (accelerometer, GPS, etc).
+- [paho-mqtt](https://pypi.python.org/pypi/paho-mqtt/1.1): a python client for the MQTT protocol is a machine-to-machine (M2M)/”Internet of Things” connectivity protocol.
+- [scipy](https://www.scipy.org/): Fundamental library for scientific computing.
+- [pandas](http://pandas.pydata.org/): pandas is an open source, BSD-licensed library providing high-performance, easy-to-use data structures and data analysis tools for the Python programming language.
+- [numpy](http://www.numpy.org/): NumPy is the fundamental package for scientific computing with Python. It contains among other things.
+- [matplotlib](http://matplotlib.org/): matplotlib is a python 2D plotting library which produces publication quality figures in a variety of hardcopy formats and interactive environments across platforms.
+
 # Frontend Techonologies on server
 
 - [node-red-contrib-graphs](https://www.npmjs.com/package/node-red-contrib-graphs): A Node-RED graphing package.
@@ -45,6 +53,12 @@ Install mqtt python 3 module and microstack shield python 3 modules on raspberry
   sudo apt-get install python3-microstacknode
   sudo apt-get install python3-pip
   sudo pip3 install paho-mqtt
+  sudo pip3 install pandas
+  sudo pip3 install matplotlib
+  
+  # install scipy. Before install dependencies for scipy compilation, uncomment in /etc/apt/sources.list the devel repositories
+  sudo apt-get update
+  sudo apt-get build-dep python3-scipy
 ```
 
 Install mosca mqtt message broker on the server:
