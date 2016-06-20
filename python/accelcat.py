@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-''' Prints the accelerometer values every second.'''
+''' Accelerometer, Velocity and Displacement python service'''
 import time
 import datetime
 import numpy
@@ -9,11 +9,13 @@ import paho.mqtt.client as mqtt
 from microstacknode.hardware.accelerometer.mma8452q import MMA8452Q
 
 # accelerometer configuration and sample rate
+MQTT_MESSAGE_BROKER_IP = '192.168.1.29'
+MQTT_MESSAGE_BROKER_PORT = 1883
 G_RANGE = 2
 GRAVITY = 9.80665 # in SI units (m/s^2)
 SAMPLE_CALIBRATION = 1024 # number of sampples
 SAMPLE_FILTERING = 100 # rolling mean samples number
-WINDOW_FILTERING = 20 # rolling mean window number
+WINDOW_FILTERING = 20 # rolling mean window
 #T = 0.5  # seconds sample rate (2 Hz)
 #T = 0.2  # seconds sample rate (5 Hz)
 T = 0.02  # seconds sample rate (50 Hz)
@@ -52,7 +54,6 @@ def auto_calibration():
 
 # low pass filtering: pandas rolling mean
 def low_pass_filtering(s, N):
-    # return pandas.rolling_mean(x, N)[N-1:]
     return s.rolling(window=N, win_type='triang').mean()
            
 if __name__ == '__main__':
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
 
-    mqttc.connect("192.168.1.29", 1883, 60)
+    mqttc.connect(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT, 60)
 
     with MMA8452Q() as accelerometer:
         # STEP02: Configure accelerometer
