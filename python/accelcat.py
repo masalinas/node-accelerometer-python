@@ -99,7 +99,7 @@ if __name__ == '__main__':
             # apply the convolution filter with a window WINDOW_FILTERING samples of to the data frame
             dataFiltered = low_pass_filtering(dataFrame, WINDOW_FILTERING)
 
-            # STEP05: calculate displacement and velocity
+            # STEP05: calculate displacement and velocity using a trapezoidal method integration
             # velocity integration from acceleration
             # displacement integration from velocity
             # remove gravity from z axis
