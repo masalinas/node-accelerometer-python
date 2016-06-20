@@ -7,11 +7,12 @@ from microstacknode.hardware.accelerometer.mma8452q import MMA8452Q
 
 # accelerometer configuration and sample rate
 G_RANGE = 2
-GRAVITY = 9.80665
-#INTERVAL = 0.5  # seconds (2 Hz)
-INTERVAL = 0.2  # seconds (5 Hz)
-#INTERVAL = 0.02  # seconds (50 Hz)
-#INTERVAL = 0.002  # seconds (500 Hz)
+GRAVITY = 9.80665 # in SI units (m/s^2)
+SAMPLE_CALIBRATION = 1024 # number of calibration sampples
+SAMPLE_LOW_FILTERING = 64
+T = 0.2  # seconds sample rate (5 Hz)
+#T = 0.02  # seconds sample rate (50 Hz)
+#T = 0.002  # seconds sample rate (500 Hz)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -25,6 +26,27 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
 
+# auto calibration function n start-up
+def calibration():
+    sstatex = 0
+    sstatey = 0
+    sstatez = 0
+    for i in range(0, SAMPLE_CALIBRATION):
+        ms = accelerometer.get_xyz_ms2()
+        
+        sstatex = sstatex + ms['x']
+        sstatey = sstatey + ms['y']
+        sstatez = sstatez + ms['z']
+
+    sstatex = sstatex / 1024 # m/s^`2
+    sstatey = sstatey / 1024 # m/s^`2
+    sstatez = (sstatez / 1024) - GRAVITY # m/s^`2
+
+    return (sstatex, sstatey, sstatez)
+
+# low_filtering
+# def low_filtering():
+    
 if __name__ == '__main__':
     mqttc = mqtt.Client()
     mqttc.on_connect = on_connect
@@ -38,55 +60,65 @@ if __name__ == '__main__':
         accelerometer.set_g_range(G_RANGE)
         accelerometer.activate()
         print("g = {}".format(G_RANGE))
-        time.sleep(INTERVAL)  # settle
+        time.sleep(T)  # settle
+
+        # initial calibration
+        print("------------------------------------------")
+        print('Waiting for auto-calibration')
+        Cax, Cay, Caz = calibration()
+        print(' calibration data | x: {}, y: {}, z: {}'.format(Cax, Cay, Caz))
 
         # initialize velocity variables
-        ti = time.time()
         Aix = 0
         Aiy = 0
         Aiz = 0
         Vix = 0
         Viy = 0
         Viz = 0
-        Dix = 0
-        Diy = 0
-        Diz = 0
-
+        
         # print data
         while True:
-            new_time = time.time()
-
+            # get accelerometer data
             raw = accelerometer.get_xyz(raw=True)
             g = accelerometer.get_xyz()
             ms = accelerometer.get_xyz_ms2()
            
-            # position and velocity inference
-            Ax = ms['x'] * 1000                                              # mm/s^2
-            Vx = Vix + ((Ax - Aix) * INTERVAL)
-            Dx = Dix + Vx * INTERVAL
-            #Dx = Dix + Vix * INTERVAL + 0.5 * Ax * INTERVAL * INTERVAL      # mm
-            #Vx = Dx / new_time                                              # mm/s
+            # calculate velocity and position from acceleration
+            if ms['x'] >=0:
+                Ax = (ms['x'] - Cax) * 1000 # mm/s^`2
+                Vx = Aix * T + abs((Ax - Aix) / 2) * T # mm/s
+                Dx = Vix * T + abs((Vx - Vix) / 2) * T # mm
+            else:
+                Ax = ms['x'] * 1000 # mm/s^`2
+                Vx = Aix * T - abs((Ax - Aix) / 2) * T # mm/s
+                Dx = Vix * T - abs((Vx - Vix) / 2) * T # mm
+                
             Aix = Ax
             Vix = Vx
-            Dix = Dx
 
-            Ay = ms['y'] * 1000                                              # mm/s^2
-            Vy = Viy + ((Ay - Aiy) * INTERVAL)
-            Dy = Diy + Vy * INTERVAL                                        
-            #Dy = Diy + Viy * INTERVAL + 0.5 * Ay * INTERVAL * INTERVAL      # mm
-            #Vy = Dy / new_time                                              # mm/s
+            if ms['y'] >=0:
+                Ay = (ms['y'] - Cay) * 1000 # mm/s^`2
+                Vy = Aiy * T + abs((Ay - Aiy) / 2) * T # mm/s
+                Dy = Viy * T + abs((Vy - Viy) / 2) * T # mm
+            else:
+                Ay = ms['y'] * 1000 # mm/s^`2
+                Vy = Aiy * T - abs((Ay - Aiy) / 2) * T # mm/s
+                Dy = Viy * T - abs((Vy - Viy) / 2) * T # mm           
+
             Aiy = Ay
             Viy = Vy
-            Diy = Dy
 
-            Az = (ms['z'] - 9.8) * 1000                                      # mm/s^2
-            Vz = Viz + ((Az - Aiz) * INTERVAL)
-            Dz = Diz + Vz * INTERVAL
-            #Dz = Diz + Viz * INTERVAL + 0.5 * Az * INTERVAL * INTERVAL      # mm
-            #Vz = Dz / new_time                                              # mm/s
+            if ms['z'] >=0:
+                Az = (ms['z'] - Caz - GRAVITY) * 1000 # mm/s^`2
+                Vz = Aiy * T + abs((Ay - Aiz) / 2) * T # mm/s
+                Dz = Viy * T + abs((Vy - Viz) / 2) * T # mm
+            else:
+                Az = (ms['z'] + GRAVITY) * 1000 # mm/s^`2
+                Vz = Aiz * T - abs((Az - Aiz) / 2) * T # mm/s
+                Dz = Viz * T - abs((Vz - Viz) / 2) * T # mm
+
             Aiz = Az                                 
             Viz = Vz
-            Diz = Dz
 
             # create measure JSON data
             #data = {'tstamp': datetime.datetime.now().isoformat(),
@@ -102,13 +134,14 @@ if __name__ == '__main__':
                           'z': Az}
                    }
 
-            print("----")
+            print("------------------------------------------")
             print(datetime.datetime.now())
-            print('  raw | x: {}, y: {}, z: {}'.format(raw['x'], raw['y'], raw['z']))
-            print('    G | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(g['x'], g['y'], g['z']))
+            print('   raw | x: {}, y: {}, z: {}'.format(raw['x'], raw['y'], raw['z']))
+            print('     G | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(g['x'], g['y'], g['z']))
             print('mm/s^2 | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(Ax, Ay, Az))
-            print('mm/s | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(Vx, Vy, Vz))
+            print('mm/s   | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(Vx, Vy, Vz))
+            print('mm     | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(Dx, Dy, Dz))
 
             mqttc.publish("sensor/accelerometer", json.dumps(data))
 
-            time.sleep(INTERVAL)
+            time.sleep(T)
