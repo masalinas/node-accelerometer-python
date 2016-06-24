@@ -1,4 +1,4 @@
-# node-accelerometer
+# node accelerometer python
 
 A proof of concept to demostrate any measure captured from a accelerometer attached to a raspberry pi 3 and transport this information throw mqtt protocol to a hub server thats centralize this information using a mqtt message broker like mosca and message router like node-red to parse and manage.
 
