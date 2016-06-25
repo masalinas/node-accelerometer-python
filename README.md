@@ -8,7 +8,7 @@ The Node-RED flow Designer
 
 The Dashboard UI with node-red-contrib-graph node-red module
 
-![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png))
+![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png)
 
 The Raspberry pi 3 and accelerometer connected
 
