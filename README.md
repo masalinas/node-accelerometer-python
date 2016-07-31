@@ -1,4 +1,4 @@
-# node-accelerometer
+# node accelerometer python
 
 A proof of concept to demostrate any measure captured from a accelerometer attached to a raspberry pi 3 and transport this information throw mqtt protocol to a hub server thats centralize this information using a mqtt message broker like mosca and message router like node-red to parse and manage.
 
@@ -6,9 +6,9 @@ The Node-RED flow Designer
 
  ![screen_accel_flow](https://cloud.githubusercontent.com/assets/1216181/16090161/9bafae1c-332e-11e6-82fe-326f93d07956.png)
 
-The Dashboard with node-red-contrib-graph node-red module
+The Dashboard UI with node-red-contrib-graph node-red module
 
-![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png))
+![picapp - apple imac 2](https://cloud.githubusercontent.com/assets/1216181/16090365/65eed644-332f-11e6-9a2a-6f50aea8bf32.png)
 
 The Raspberry pi 3 and accelerometer connected
 
@@ -16,7 +16,7 @@ The Raspberry pi 3 and accelerometer connected
 
 Architecture
 
-![accelerometer_arch](https://cloud.githubusercontent.com/assets/1216181/16018154/7defe644-31a3-11e6-93c2-b8d0c215537d.jpg)
+![architecture](https://cloud.githubusercontent.com/assets/1216181/16357341/1f6fc83c-3af4-11e6-9b85-b0e8a111a843.png)
 
 # Hardware:
 
