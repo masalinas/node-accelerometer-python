@@ -12,8 +12,9 @@ import paho.mqtt.client as mqtt
 from microstacknode.hardware.accelerometer.mma8452q import MMA8452Q
 
 # accelerometer configuration and sample rate
-MQTT_MESSAGE_BROKER_IP = '192.168.1.38' # mqtt default server
+MQTT_MESSAGE_BROKER_IP = '192.168.1.100' # mqtt default server
 MQTT_MESSAGE_BROKER_PORT = 1883 # mqtt default port
+MQTT_MESSAGE_KEEPALIVE = 43200 # 12 horas
 MQTT_MESSAGE_PUB_SENSOR = 'sensor/pub/accelerometer' # default mqtt publish sensor topic 
 MQTT_MESSAGE_SUB_SENSOR = 'sensor/sub/accelerometer' # default mqtt subscrtiber sensor topic 
 MQTT_IS_CONNECTED = 0 # Mqtt status connection
@@ -35,7 +36,7 @@ def reconnect():
        try:
           mqttc.reconnect()
           
-          print("Reconnected to MQTT server: {} in the port: {} with result code: ".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT) + str(rc) + "\n")
+          #print("Reconnected to MQTT server: {} in the port: {} with result code: ".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT) + str(0) + "\n")
           MQTT_IS_CONNECTED = 1
            
        except Exception as e:
@@ -107,20 +108,23 @@ if __name__ == '__main__':
     DzF=0
 
     # STEP02: configure mqtt client and connect to message broker
-    mqttc = mqtt.Client(client_id="accelcal", clean_session=False)
+    # be careful with the version used: 3.1 or 3.1.1. Not all mqtt message broker implement the last default version used by paho client
+    #mqttc = mqtt.Client(client_id="accelcal", clean_session=False) # if use mosca mqtt broker we can use the default version 3.1.1
+    mqttc = mqtt.Client(client_id="accelcal", clean_session=False, protocol=mqtt.MQTTv31) #if use ActiveMQ message broker not implement version 3.1.1, specifie the version 3.1
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
     mqttc.on_disconnect = on_disconnect
 
     try:
-         mqttc.connect(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT, 60)
+         print("Connection to Server: {} and port: {}".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT))
+         mqttc.connect(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT, MQTT_MESSAGE_KEEPALIVE)
     except Exception as e:
          print("Error reconnecting with error: " + str(e))
 
          print("Unexpected MQTT disconnection. Attempting to reconnect.")
-         mqttc.loop_start()
-
          reconnect() 
+    finally:
+         mqttc.loop_start()
 
     # connect to the accelerometer device MMA8452Q
     with MMA8452Q() as accelerometer:
@@ -219,8 +223,8 @@ if __name__ == '__main__':
                
                # STEP08: create JSON data after transport rate
                if (time.time() - ti) > R * 60:
-                 #data = {'tstamp': datetime.datetime.now().isoformat(),
-                 data = {'tstamp': time.mktime(datetime.datetime.now().timetuple()) + datetime.datetime.now().microsecond/1000000.0,
+                 data = {'tstamp': datetime.datetime.now().isoformat(),
+                 #data = {'tstamp': time.mktime(datetime.datetime.now().timetuple()) + datetime.datetime.now().microsecond/1000000.0,
                        'D': {'x': DxF,
                              'y': DyF,
                              'z': DzF},
