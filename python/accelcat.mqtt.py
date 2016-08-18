@@ -8,7 +8,17 @@ import numpy
 import pandas
 import json
 import math
+import paho.mqtt.client as mqtt
 from microstacknode.hardware.accelerometer.mma8452q import MMA8452Q
+
+# accelerometer configuration and sample rate
+MQTT_MESSAGE_BROKER_IP = '54.213.197.15' # mqtt default server
+MQTT_MESSAGE_BROKER_PORT = 1883 # mqtt default port
+MQTT_MESSAGE_KEEPALIVE = 43200 # 12 horas
+MQTT_MESSAGE_PUB_SENSOR = 'sensor/pub/accelerometer' # default mqtt publish sensor topic 
+MQTT_MESSAGE_SUB_SENSOR = 'sensor/sub/accelerometer' # default mqtt subscrtiber sensor topic 
+MQTT_IS_CONNECTED = 0 # Mqtt status connection
+MQTT_RECONNECTION_FREC = 5 # reconnection frecuency in seconds
 
 G_RANGE = 2
 GRAVITY = 9.80665 # in SI units (m/s^2)
@@ -18,10 +28,46 @@ WINDOW_FILTERING = 20 # rolling mean window
 #T = 0.2  # seconds. Sample rate (5 Hz)
 T = 0.02  # seconds. Sample rate (50 Hz)
 #T = 0.002  # seconds. Sample rate (500 Hz)
-R = 1 # sample transport rate in minutes
+R = 6 # sample transport rate in minutes
 
-REPOSITORY = "./repository";
-HUBNAME = "accelcat";
+def reconnect():
+    global MQTT_IS_CONNECTED
+    while(MQTT_IS_CONNECTED == 0):
+       try:
+          mqttc.reconnect()
+          
+          #print("Reconnected to MQTT server: {} in the port: {} with result code: ".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT) + str(0) + "\n")
+          MQTT_IS_CONNECTED = 1
+           
+       except Exception as e:
+          print("Error reconnecting with error: " + str(e))
+             
+          time.sleep(MQTT_RECONNECTION_FREC) 
+
+# The callback for when the client receives a CONNACK response from the server.
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT server: {} in the port: {} with result code: ".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT) + str(rc) + "\n")
+    global MQTT_IS_CONNECTED
+    MQTT_IS_CONNECTED = 1
+
+    # Subscribing in on_connect() means that if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    mqttc.subscribe(MQTT_MESSAGE_SUB_SENSOR, qos=1)
+    print("Subscribe to MQTT topic: {}".format(MQTT_MESSAGE_SUB_SENSOR) + "\n")
+
+# The callback for when a PUBLISH message is received from the server.
+def on_message(client, userdata, msg):
+    print("Message from topic: " + msg.topic + ", message payload: " + str(msg.payload) + "\n")
+
+# The callback for when the client receives a DISCONNECT response from server
+def on_disconnect(client, userdata, rc):
+    print("Disconnected from MQTT server: {} in the port: {} with result code: ".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT) + str(rc) + "\n")
+    global MQTT_IS_CONNECTED
+    MQTT_IS_CONNECTED = 0
+
+    if rc != 0:
+        print("Unexpected MQTT disconnection. Attempting to reconnect.")
+        reconnect()
 
 # calibration: This calibration routine removes the acceleration offset component in the sensor output due
 # to the earth's gravity (static acceleration)
@@ -61,16 +107,36 @@ if __name__ == '__main__':
     DyF=0
     DzF=0
 
+    # STEP02: configure mqtt client and connect to message broker
+    # be careful with the version used: 3.1 or 3.1.1. Not all mqtt message broker implement the last default version used by paho client
+    #mqttc = mqtt.Client(client_id="accelcal", clean_session=False) # if use mosca mqtt broker we can use the default version 3.1.1
+    mqttc = mqtt.Client(client_id="accelcal", clean_session=False, protocol=mqtt.MQTTv31) #if use ActiveMQ message broker not implement version 3.1.1, specifie the version 3.1
+    mqttc.on_connect = on_connect
+    mqttc.on_message = on_message
+    mqttc.on_disconnect = on_disconnect
+
+    try:
+         print("Connection to Server: {} and port: {}".format(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT))
+         # mqttc.connect(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT, MQTT_MESSAGE_KEEPALIVE)
+         mqttc.connect(MQTT_MESSAGE_BROKER_IP, MQTT_MESSAGE_BROKER_PORT)
+    except Exception as e:
+         print("Error reconnecting with error: " + str(e))
+
+         print("Unexpected MQTT disconnection. Attempting to reconnect.")
+         reconnect() 
+    finally:
+         mqttc.loop_start()
+
     # connect to the accelerometer device MMA8452Q
     with MMA8452Q() as accelerometer:
-        # STEP02: Configure accelerometer
+        # STEP03: Configure accelerometer
         accelerometer.standby()
         accelerometer.set_g_range(G_RANGE)
         accelerometer.activate()
         print("Accelerometer G range configuration = {}".format(G_RANGE) + "\n")
         time.sleep(T)
 
-        # STEP03: auto-calibration
+        # STEP04: auto-calibration
         Cax, Cay, Caz = auto_calibration()
         print('----')
         print('Auto-calibration data | x: {}, y: {}, z: {}'.format(Cax, Cay, Caz) + "\n")
@@ -83,7 +149,7 @@ if __name__ == '__main__':
         Viz = 0
         
         while True:
-            # STEP04: apply a convolution filter to the three axis (moving average filter)
+            # STEP05: apply a convolution filter to the three axis (moving average filter)
             # extract the raw data from the three accelerometer axis
             index = range(0, SAMPLE_FILTERING)
             filtval = []
@@ -97,7 +163,7 @@ if __name__ == '__main__':
             dataFiltered = low_pass_filtering(dataFrame, WINDOW_FILTERING)
 
             for index, ms in dataFiltered.iterrows():
-               # STEP05: calculate displacement and velocity using a trapezoidal method integration
+               # STEP06: calculate displacement and velocity using a trapezoidal method integration
                # velocity integration from acceleration
                # displacement integration from velocity
                # remove gravity from z axis
@@ -140,7 +206,7 @@ if __name__ == '__main__':
                Aiz = Az                                 
                Viz = Vz
                
-               # STEP06: get the maximun value in the three axis
+               # STEP07: get the maximun value in the three axis
                if VxF < abs(Vx):
                   AxF = abs(Ax)
                   VxF = abs(Vx)
@@ -156,31 +222,34 @@ if __name__ == '__main__':
                   VzF = abs(Vz)
                   DzF = abs(Dz)
                
-               # STEP07: create JSON data after transport rate
+               # STEP08: create JSON data after transport rate
                if (time.time() - ti) > R * 60:
                  data = {'tstamp': datetime.datetime.now().isoformat(),
-                         'D': {'x': DxF,
-                               'y': DyF,
-                               'z': DzF},
-                         'V': {'x': VxF,
-                               'y': VyF,
-                               'z': VzF},
-                         'A': {'x': AxF,
-                               'y': AyF,
-                               'z': AzF}}
+                 #data = {'tstamp': time.mktime(datetime.datetime.now().timetuple()) + datetime.datetime.now().microsecond/1000000.0,
+                       'D': {'x': DxF,
+                             'y': DyF,
+                             'z': DzF},
+                       'V': {'x': VxF,
+                             'y': VyF,
+                             'z': VzF},
+                       'A': {'x': AxF,
+                             'y': AyF,
+                             'z': AzF}}
                        
-                 # STEP08: publish save JSON result on repository folder
-                 f = open(REPOSITORY + '/' + HUBNAME + '_' + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + '.json', 'w')
-                 f.write(json.dumps(data))
-                 f.close()
-
                  # logging result
-                 print('----')
-                 print('Json file saved correctly at {}'.format(datetime.datetime.now()))
+                 print("----")
+                 print(datetime.datetime.now())
                  print('Acceleration [mm/s^2] | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(AxF, AyF, AzF))
                  print('Velocity [mm/s] | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(VxF, VyF, VzF))
                  print('Distance [mm] | x: {:.2f}, y: {:.2f}, z: {:.2f}'.format(DxF, DyF, DzF))
                  print("\n")
+
+                 # publish JSON result on message broker
+                 print("Mqtt status: {}".format(MQTT_IS_CONNECTED))
+                 if MQTT_IS_CONNECTED == 1:
+                     (rc, mid) = mqttc.publish(MQTT_MESSAGE_PUB_SENSOR, json.dumps(data))
+                     print("rc: {} | mid: {} | data: {}".format(rc, mid, json.dumps(data)))
+                     print('Mqtt Published correctly')
 
                  # initialize transport time and final meassures
                  ti = time.time()
